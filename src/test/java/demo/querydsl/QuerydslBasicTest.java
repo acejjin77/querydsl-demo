@@ -327,7 +327,7 @@ public class QuerydslBasicTest {
                 selectFrom(member)
                 .where(member.age.goe(
                                 JPAExpressions
-                                        .select(memberSub.age.avg())1
+                                        .select(memberSub.age.avg())
                                         .from(memberSub)
                                         .where(memberSub.age.goe(10))
                         ), member.name.contains("Test")
