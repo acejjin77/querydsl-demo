@@ -34,7 +34,6 @@ public class QuerydslMiddleTest {
 
     @Autowired
     EntityManager entityManager;
-
     JPAQueryFactory queryFactory;
 
     @BeforeEach
