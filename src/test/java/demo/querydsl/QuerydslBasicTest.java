@@ -2,6 +2,9 @@ package demo.querydsl;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import demo.querydsl.entity.Member;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import java.util.Calendar;
 import java.util.List;
 
 import static demo.querydsl.entity.QMember.member;
@@ -336,5 +340,42 @@ public class QuerydslBasicTest {
 
         assertThat(result).extracting("age")
                 .containsExactly(30, 40);
+    }
+
+    /**
+     * case별로 분리
+     * 데이터 변경 같은건 애플리케이션에서 바꿔주는걸로
+     * DB는 지양하자
+     */
+    
+    @Test
+    public void basicCase() {
+        List<String> result = queryFactory
+                .select(member.age
+                        .when(10).then("열살")
+                        .when(20).then("스무살")
+                        .otherwise("기타"))
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("basic = " + s);
+        }
+    }
+
+    @Test
+    public void complexCase() {
+        List<String> result = queryFactory
+                .select(new CaseBuilder()
+                        .when(member.age.between(0, 20)).then("0~20")
+                        .when(member.age.between(21, 30)).then("21~30")
+                        .otherwise("기타")
+                )
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("complex = " + s);
+        }
     }
 }
