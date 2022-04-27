@@ -1,6 +1,8 @@
 package demo.querydsl.repository;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import demo.querydsl.dto.MemberCond;
 import demo.querydsl.dto.MemberTeamDto;
@@ -67,6 +69,11 @@ public class MemberJpaRepository {
                 .fetch();
     }
 
+    /**
+     * 불린빌더 사용
+     * @param memberCond
+     * @return
+     */
     public List<MemberTeamDto> searchByBuilder(MemberCond memberCond) {
 
         BooleanBuilder booleanBuilder = new BooleanBuilder();
@@ -97,4 +104,45 @@ public class MemberJpaRepository {
                 .where(booleanBuilder)
                 .fetch();
     }
+
+    /**
+     * where 절에 메소드 삽입. 메소드 재사용이 가능해서 이게 더 좋다
+     * @param memberCond
+     * @return
+     */
+    public List<MemberTeamDto> searchByWhereParam(MemberCond memberCond) {
+        return queryFactory
+                .select(new QMemberTeamDto(
+                        member.id.as("memberId"),
+                        member.name.as("memberName"),
+                        member.age,
+                        team.id.as("teamId"),
+                        team.name.as("teamName")
+                ))
+                .from(member)
+                .where(memberNameEq(memberCond.getMemberName()),
+                        teamNameEq(memberCond.getTeamName()),
+                        ageGoe(memberCond.getAgeGoe()),
+                        ageLoe(memberCond.getAgeLoe())
+                )
+                .fetch();
+
+    }
+
+    private BooleanExpression memberNameEq(String memberName) {
+        return StringUtils.hasText(memberName) ? member.name.eq(memberName) :null ;
+    }
+
+    private BooleanExpression teamNameEq(String teamName) {
+        return StringUtils.hasText(teamName) ? team.name.eq(teamName) : null;
+    }
+
+    private BooleanExpression ageGoe(Integer ageGoe) {
+        return ageGoe != null ? member.age.goe(ageGoe) : null;
+    }
+
+    private BooleanExpression ageLoe(Integer ageLoe) {
+        return ageLoe != null ? member.age.loe(ageLoe) : null;
+    }
+
 }
